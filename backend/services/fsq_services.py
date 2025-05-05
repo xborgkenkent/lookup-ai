@@ -2,10 +2,11 @@ import os
 import logging
 import httpx
 from fastapi import HTTPException
-from typing import List
+from typing import List, Union
 from dotenv import load_dotenv
 from utils.constants import restaurant_fields, categories
 from models.restaurant_models import RestaurantResponse
+from models.hotel_models import HotelResponse
 from models.fsq_models import FourSquareResponse, FourSquareResult
 
 load_dotenv()
@@ -21,7 +22,7 @@ if not FSQ_BASE_URL:
     logger.critical("FSQ_BASE_URL environment variable is not set")
     raise RuntimeError("FSQ_BASE_URL environment variable is not set")
 
-async def fsq_search(action: str, parameters: dict) -> List[RestaurantResponse]:
+async def fsq_search(action: str, parameters: dict) -> Union[List[RestaurantResponse], List[HotelResponse]]:
     try:
         if not parameters:
             raise HTTPException(status_code=400, detail="No search parameters provided.")
@@ -47,7 +48,13 @@ async def fsq_search(action: str, parameters: dict) -> List[RestaurantResponse]:
         
         data = FourSquareResponse.model_validate(response.json())
         
-        return get_restaurants(data.results)
+        if action == "restaurant":
+            return get_restaurants(data.results)
+        elif action == "hotel":
+            return get_hotels(data.results)
+        else:
+            # Default to restaurant if action is not recognized
+            return get_restaurants(data.results)
     
     except httpx.RequestError as e:
         logger.error(f"Request error: {e}")
@@ -82,6 +89,34 @@ def get_restaurants(restaurants: List[FourSquareResult]):
         return restaurant_list
     except Exception as e:
         logger.error(f"Error processing restaurant data: {e}")
+
+def get_hotels(hotels: List[FourSquareResult]):
+    """Extract hotel details from the Foursquare results."""
+    hotel_list = []
+    
+    try:
+        for hotel in hotels:
+            formatted = format_location(hotel.location)
+            
+            hours_display = None
+            if hotel.hours:
+                hours_display = hotel.hours.display
+            
+            hotel_summary = HotelResponse(
+                name=hotel.name,
+                address=formatted,
+                fsq_id=hotel.fsq_id,
+                hours=hours_display,
+                rating=hotel.rating,
+                price=hotel.price,
+                cuisine=hotel.menu,
+                features=hotel.features
+            )
+            hotel_list.append(hotel_summary)
+        
+        return hotel_list
+    except Exception as e:
+        logger.error(f"Error processing hotel data: {e}")
 
 def format_location(location):
     """
