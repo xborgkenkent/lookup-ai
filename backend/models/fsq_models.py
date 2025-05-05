@@ -1,5 +1,31 @@
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional, List, Dict, Union
+
+class Parking(BaseModel):
+    parking: Optional[Union[Dict, bool]] = None
+    street_parking: Optional[Union[Dict, bool]] = None
+    valet_parking: Optional[Union[Dict, bool]] = None
+    public_lot: Optional[Union[Dict, bool]] = None
+    private_lot: Optional[Union[Dict, bool]] = None
+
+class Amenities(BaseModel):
+    restroom: Optional[Union[Dict, bool]] = None
+    smoking: Optional[Union[Dict, bool]] = None
+    jukebox: Optional[Union[Dict, bool]] = None
+    music: Optional[Union[Dict, bool]] = None
+    live_music: Optional[Union[Dict, bool]] = None
+    private_room: Optional[Union[Dict, bool]] = None
+    outdoor_seating: Optional[Union[Dict, bool]] = None
+    tvs: Optional[Union[Dict, bool]] = None
+    atm: Optional[Union[Dict, bool]] = None
+    coat_check: Optional[Union[Dict, bool]] = None
+    wheelchair_accessible: Optional[Union[Dict, bool]] = None
+    parking: Optional[Parking] = None
+    sit_down_dining: Optional[Union[Dict, bool]] = None
+    wifi: Optional[Union[str, bool]] = None
+
+class Features(BaseModel):
+    amenities: Optional[Amenities] = None
 
 class FourSquareRegular(BaseModel):
     close: str
@@ -30,6 +56,7 @@ class FourSquareLocation(BaseModel):
 
 class FourSquareResult(BaseModel):
     fsq_id: str
+    features: Optional[Features] = None
     hours: Optional[FourSquareHours] = None
     location: FourSquareLocation
     menu: Optional[str] = None
