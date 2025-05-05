@@ -9,4 +9,5 @@ class RestaurantResponse(BaseModel):
     address: Optional[str] = None
     cuisine: Optional[str] = None
     fsq_id: str
+    type: str = "restaurant"
     
