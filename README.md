@@ -16,7 +16,7 @@ cd lookup-ai
 
 ## Backend Setup (FastAPI)
 
-1.  *Navigate to the backend directory and create virtual environment:**
+1.  **Navigate to the backend directory and create virtual environment:**
 
     ```bash
     cd backend
